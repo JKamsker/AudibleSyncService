@@ -5,6 +5,18 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AudibleSyncService", "AudibleSyncService\AudibleSyncService.csproj", "{611103D9-B6B8-4AF9-8B86-7296A451B939}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "external", "external", "{4C3142F4-65C5-4C0E-A225-36BDA2F7EC0C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Rn.Suite", "Rn.Suite", "{9E0B7B1B-6C9A-4F43-BBA3-DA0EE42C600B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rnd.Lib", "external\Rn.Suite\src\lib\Rnd.Lib\Rnd.Lib.csproj", "{278072A9-B116-4E24-96A4-E115DC5909AA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rnd.IO", "external\Rn.Suite\src\lib\Rnd.IO\Rnd.IO.csproj", "{AAAE6318-772A-460E-9416-3430C1E0FF9E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rnd.Logging", "external\Rn.Suite\src\lib\Rnd.Logging\Rnd.Logging.csproj", "{30CE75B2-DB5E-44C0-919E-D915D9FF05C9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rnd.MongoDb", "external\Rn.Suite\src\lib\Rnd.MongoDb\Rnd.MongoDb.csproj", "{64027D2D-7B43-4E15-AF43-1A0A4AF6A447}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,11 +27,34 @@ Global
 		{611103D9-B6B8-4AF9-8B86-7296A451B939}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{611103D9-B6B8-4AF9-8B86-7296A451B939}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{611103D9-B6B8-4AF9-8B86-7296A451B939}.Release|Any CPU.Build.0 = Release|Any CPU
+		{278072A9-B116-4E24-96A4-E115DC5909AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{278072A9-B116-4E24-96A4-E115DC5909AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{278072A9-B116-4E24-96A4-E115DC5909AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{278072A9-B116-4E24-96A4-E115DC5909AA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AAAE6318-772A-460E-9416-3430C1E0FF9E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AAAE6318-772A-460E-9416-3430C1E0FF9E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AAAE6318-772A-460E-9416-3430C1E0FF9E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AAAE6318-772A-460E-9416-3430C1E0FF9E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{30CE75B2-DB5E-44C0-919E-D915D9FF05C9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{30CE75B2-DB5E-44C0-919E-D915D9FF05C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{30CE75B2-DB5E-44C0-919E-D915D9FF05C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{30CE75B2-DB5E-44C0-919E-D915D9FF05C9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{64027D2D-7B43-4E15-AF43-1A0A4AF6A447}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{64027D2D-7B43-4E15-AF43-1A0A4AF6A447}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{64027D2D-7B43-4E15-AF43-1A0A4AF6A447}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{64027D2D-7B43-4E15-AF43-1A0A4AF6A447}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B157975F-1788-4437-9B45-C052238F4D76}
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{9E0B7B1B-6C9A-4F43-BBA3-DA0EE42C600B} = {4C3142F4-65C5-4C0E-A225-36BDA2F7EC0C}
+		{278072A9-B116-4E24-96A4-E115DC5909AA} = {9E0B7B1B-6C9A-4F43-BBA3-DA0EE42C600B}
+		{AAAE6318-772A-460E-9416-3430C1E0FF9E} = {9E0B7B1B-6C9A-4F43-BBA3-DA0EE42C600B}
+		{30CE75B2-DB5E-44C0-919E-D915D9FF05C9} = {9E0B7B1B-6C9A-4F43-BBA3-DA0EE42C600B}
+		{64027D2D-7B43-4E15-AF43-1A0A4AF6A447} = {9E0B7B1B-6C9A-4F43-BBA3-DA0EE42C600B}
 	EndGlobalSection
 EndGlobal

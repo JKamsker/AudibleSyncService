@@ -1,0 +1,3 @@
+[submodule "external/Rn.Suite"]
+	path = external/Rn.Suite
+	url = https://github.com/JKamsker/Rn.Suite.git
