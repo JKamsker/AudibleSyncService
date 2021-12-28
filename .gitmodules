@@ -1,3 +1,9 @@
 [submodule "external/Rn.Suite"]
 	path = external/Rn.Suite
 	url = https://github.com/JKamsker/Rn.Suite.git
+[submodule "external/AAXClean"]
+	path = external/AAXClean
+	url = https://github.com/Mbucari/AAXClean.git
+[submodule "external/AudibleApi"]
+	path = external/AudibleApi
+	url = https://github.com/JKamsker/AudibleApi.git
