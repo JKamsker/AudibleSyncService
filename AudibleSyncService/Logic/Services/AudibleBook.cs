@@ -79,7 +79,7 @@ namespace AudibleSyncService
             try
             {
                 var contentLic = await _apiClient.GetDownloadLicenseAsync(_item.Asin);
-                _logger.LogInformation($"OfflineUrl: '{contentLic?.ContentMetadata?.ContentUrl?.OfflineUrl}'");
+                //_logger.LogTrace($"OfflineUrl: '{contentLic?.ContentMetadata?.ContentUrl?.OfflineUrl}'");
                 var isAdrm = contentLic.DrmType == DrmType.Adrm;
 
                 if (!isAdrm)
@@ -106,7 +106,7 @@ namespace AudibleSyncService
                     return;
                 }
 
-                _logger.LogInformation("Performing download");
+                //_logger.LogInformation("Performing download");
                 //var encryptedFile = GetTempDirectory().GetFile("audiobook.aaxc");
                 using (var fs = EncryptedFile.EnsureDeleted().OpenWrite())
                 {

@@ -117,7 +117,11 @@ namespace AudibleSyncService
                     },
                     cancellationToken: default
                 )
-                .ReadAll(cancellationToken: token, x => x.Dispose(), deferredExecution: true);
+                .ReadAll(cancellationToken: token, x =>
+                {
+                    _logger.LogInformation($"{x.Identifier}: Finished Sync");
+                    x.Dispose();
+                }, deferredExecution: true);
 
             async Task Download(AudibleBook book, CancellationToken token)
             {
