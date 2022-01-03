@@ -16,6 +16,7 @@ using System.Threading.Channels;
 using System.Collections.Generic;
 using Open.ChannelExtensions;
 using System.Linq;
+using Newtonsoft.Json.Linq;
 
 namespace AudibleSyncService
 {
@@ -50,6 +51,8 @@ namespace AudibleSyncService
 
             try
             {
+                _logger.LogInformation($"Headless: {_config.Headless}");
+                _logger.LogInformation($"Logging in with user '{_config.Credentials.UserName}'");
                 await SyncNewAsync(stoppingToken);
             }
             catch (Exception ex)
@@ -64,6 +67,8 @@ namespace AudibleSyncService
         private async Task SyncNewAsync(CancellationToken token)
         {
             var client = await GetClientAsync();
+            await EchoUserInfo(client);
+
             var items = client
                 .EnumerateLibraryItemsAsync();
 
@@ -134,8 +139,21 @@ namespace AudibleSyncService
             }
         }
 
+        private async Task EchoUserInfo(Api client)
+        {
+            try
+            {
+                var profile = await client.UserProfileAsync();
+                var email = profile["email"].Value<string>();
 
+                _logger.LogInformation($"Logged in with user: '{email}'");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, $"Error while trying to echo user info:  {ex}");
+            }
 
+        }
 
         private async Task SyncAsync()
         {

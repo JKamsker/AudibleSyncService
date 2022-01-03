@@ -364,3 +364,4 @@ FodyWeavers.xsd
 /AudibleSyncService/appsettings.Development.json
 data
 /AudibleSyncService/settings
+*.env

@@ -8,9 +8,10 @@ services:
             # - './data/settings:/data/settings'
             - './data:/data'
         # image: a-sync
+        environment:
+          - Audible__Credentials__UserName=${AUDIBLE_USERNAME}
+          - Audible__Credentials__Password=${AUDIBLE_PASSWORD}
+          - Audible__Headless=false
         build: 
             context: ./
             dockerfile: Dockerfile
-            # image: audible-sync
-        # environment: 
-        #     - DHPARAM_GENERATION=false

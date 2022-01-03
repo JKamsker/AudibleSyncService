@@ -1,9 +1,11 @@
 ﻿
 using AudibleApi;
 
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 using System;
+using System.IO;
 
 using WorkerService.Models.Configuration;
 
@@ -12,22 +14,57 @@ namespace AudibleSyncService
     public class LoginCallback : ILoginCallback
     {
         private readonly AudibleConfig _options;
+        private readonly ILogger<LoginCallback> _logger;
 
-        public LoginCallback(IOptions<AudibleConfig> options)
+        public LoginCallback
+        (
+            IOptions<AudibleConfig> options,
+            ILogger<LoginCallback> logger
+        )
         {
             _options = options.Value;
+            _logger = logger;
         }
         public string Get2faCode()
         {
-            throw new NotImplementedException("2FA is not available in headless mode");
-            //var _2faCode = Console.ReadLine();
-            //return _2faCode;
+            if (_options.Headless)
+            {
+                throw new NotImplementedException("2FA is not available in headless mode");
+            }
+
+            var _2faCode = Console.ReadLine();
+            return _2faCode;
         }
 
         public string GetCaptchaAnswer(byte[] captchaImage)
         {
-            throw new NotImplementedException("Chaptcha is not available in headless mode");
-            //var tempFileName = Path.Combine(Path.GetTempPath(), "audible_api_captcha_" + Guid.NewGuid() + ".jpg");
+            if (_options.Headless)
+            {
+                throw new NotImplementedException("Chaptcha is not available in headless mode");
+            }
+
+            //throw new NotImplementedException("Chaptcha is not available in headless mode");
+            var tempPath = string.IsNullOrEmpty(_options.Environment.TempPath)
+                ? Path.Combine(Path.GetTempPath(), "audibleSyncWorker")
+                : _options.Environment.TempPath;
+
+            var captchaPath = Path.Combine(tempPath, "audible_api_captcha_" + Guid.NewGuid() + ".jpg");
+            try
+            {
+                File.WriteAllBytes(captchaPath, captchaImage);
+
+                Console.WriteLine($"Saved captcha image to '{captchaPath}'");
+                Console.WriteLine("CAPTCHA answer: ");
+                var guess = Console.ReadLine();
+
+                return guess;
+            }
+            finally
+            {
+                if (File.Exists(captchaPath))
+                    File.Delete(captchaPath);
+            }
+
 
             //try
             //{

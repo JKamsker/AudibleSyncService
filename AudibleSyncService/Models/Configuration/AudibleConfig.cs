@@ -8,6 +8,7 @@ namespace WorkerService.Models.Configuration
 {
     public class AudibleConfig
     {
+        public bool Headless { get; set; } = true;
         public string Locale { get; set; }
         public AudibleCredentials Credentials { get; set; }
         public AudibleEnvironment Environment { get; set; }

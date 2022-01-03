@@ -177,6 +177,7 @@ namespace AudibleSyncService
             var target = GetOutputPath().EnsureParentCreated();
 
             DecryptedFile.MoveTo(target);
+           
         }
 
         private FileInfo GetOutputPath()
