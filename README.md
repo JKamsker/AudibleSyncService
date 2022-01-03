@@ -26,7 +26,7 @@ version: '3.3'
 		image: ghcr.io/jkamsker/audiblesyncservice/audible_sync_service:latest
 ````
 
-Head over to [Configure environment variables]{#103-configure-environment-variables}
+Head over to [### 1.0.3 Configure environment variables](#103-configure-environment-variables)
 
 
 
