@@ -1,17 +1,14 @@
 version: '3.3'
 services:
-    audible-sync:
-        container_name: audible-sync
+    audible_sync:
+        container_name: audible_sync
         volumes:
-            # - './data/tmp:/data/tmp'
-            # - './data/out:/data/out'
-            # - './data/settings:/data/settings'
             - './data:/data'
-        # image: a-sync
         environment:
+          - Audible__Locale=germany
           - Audible__Credentials__UserName=${AUDIBLE_USERNAME}
           - Audible__Credentials__Password=${AUDIBLE_PASSWORD}
-          - Audible__Headless=false
-        build: 
-            context: ./
-            dockerfile: Dockerfile
+        image: ghcr.io/jkamsker/audiblesyncservice/audible_sync_service:latest # Run with latest version
+        # build: 
+        #     context: ./
+        #     dockerfile: Dockerfile

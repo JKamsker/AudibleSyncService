@@ -92,9 +92,9 @@ namespace AudibleSyncService
                 using var req = new HttpRequestMessage(HttpMethod.Get, contentLic?.ContentMetadata?.ContentUrl?.OfflineUrl)
                 {
                     Headers =
-                {
-                    { "User-Agent", Resources.USER_AGENT },
-                }
+                    {
+                        { "User-Agent", Resources.USER_AGENT },
+                    }
                 };
 
                 using var downloadResponse = await cli.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, token);

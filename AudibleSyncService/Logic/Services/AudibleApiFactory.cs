@@ -29,11 +29,16 @@ namespace AudibleSyncService
             _config = config.Value;
         }
 
+        public bool IdentityExists()
+        {
+            var settingsBasePath = GetConfigPath();
+            var identityFile = Path.Combine(settingsBasePath, "identity.json");
+            return File.Exists(identityFile);
+        }
+
         public async Task<Api> GetApiAsync()
         {
-            var settingsBasePath = string.IsNullOrEmpty(_config.Environment?.SettingsBasePath)
-                ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "audibleSyncWorker")
-                : _config.Environment.SettingsBasePath;
+            var settingsBasePath = GetConfigPath();
 
             Directory.CreateDirectory(settingsBasePath);
             _logger.LogInformation($"Using settings basePath: '{settingsBasePath}'");
@@ -45,6 +50,12 @@ namespace AudibleSyncService
                 jsonPath = null;
             }
 
+
+            //if (!File.Exists(identityFile))
+            //{
+            //    EzApiCreator
+            //}
+
             return await EzApiCreator.GetApiAsync
             (
                 _loginCallback,
@@ -52,6 +63,13 @@ namespace AudibleSyncService
                 identityFile,
                 jsonPath
             );
+        }
+
+        private string GetConfigPath()
+        {
+            return string.IsNullOrEmpty(_config.Environment?.SettingsBasePath)
+                ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "audibleSyncWorker")
+                : _config.Environment.SettingsBasePath;
         }
     }
 }

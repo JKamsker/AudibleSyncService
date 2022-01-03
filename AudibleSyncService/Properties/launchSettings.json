@@ -2,6 +2,7 @@
   "profiles": {
     "AudibleSyncService": {
       "commandName": "Project",
+      "_commandLineArgs": "-setup",
       "environmentVariables": {
         "DOTNET_ENVIRONMENT": "Development"
       }

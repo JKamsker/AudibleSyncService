@@ -17,9 +17,11 @@ using System.Collections.Generic;
 using Open.ChannelExtensions;
 using System.Linq;
 using Newtonsoft.Json.Linq;
+using Dinah.Core.Collections.Generic;
 
 namespace AudibleSyncService
 {
+
     public class AudibleSyncWorkerService : BackgroundService
     {
         private readonly AudibleConfig _config;
@@ -43,15 +45,27 @@ namespace AudibleSyncService
         }
         private async ValueTask<Api> GetClientAsync()
         {
-            return _apiClient ??= await _factory.GetApiAsync();
+            if (_apiClient is not null)
+            {
+                return _apiClient;
+            }
+
+            _logger.LogInformation("Validating identity file");
+            if (_config.Headless && !_factory.IdentityExists())
+            {
+                throw new Exception("Identity file not found or invalid. Please turn Headless mode off and follow the authorization flow.");
+            }
+
+            return (_apiClient = await _factory.GetApiAsync());
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-
             try
             {
                 _logger.LogInformation($"Headless: {_config.Headless}");
+                _logger.LogInformation($"Setup: {_config.Setup}");
+
                 _logger.LogInformation($"Logging in with user '{_config.Credentials.UserName}'");
                 await SyncNewAsync(stoppingToken);
             }
@@ -143,9 +157,7 @@ namespace AudibleSyncService
         {
             try
             {
-                var profile = await client.UserProfileAsync();
-                var email = profile["email"].Value<string>();
-
+                var email = await client.GetEmailAsync();
                 _logger.LogInformation($"Logged in with user: '{email}'");
             }
             catch (Exception ex)
