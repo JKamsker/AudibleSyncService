@@ -1,8 +1,44 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net5.0</TargetFramework>
-  </PropertyGroup>
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net6.0</TargetFramework>
+		<LangVersion>latest</LangVersion>
+		<Platforms>AnyCPU;x64</Platforms>
+	</PropertyGroup>
 
+	<ItemGroup>
+	  <None Include="..\.editorconfig" Link=".editorconfig" />
+	</ItemGroup>
+	
+	<ItemGroup>
+		<PackageReference Include="AutoMapper" Version="10.1.1" />
+		<PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="8.1.1" />
+		<PackageReference Include="Microsoft.ApplicationInsights.WorkerService" Version="2.20.0" />
+		<PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0" />
+
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
+
+		<PackageReference Include="Open.ChannelExtensions" Version="5.1.3" />
+	</ItemGroup>
+	
+	<ItemGroup>
+		<ProjectReference Include="..\external\AAXClean\AAXClean.csproj" />
+		<ProjectReference Include="..\external\AudibleApi\AudibleApi.Common\AudibleApi.Common.csproj" />
+		<ProjectReference Include="..\external\AudibleApi\AudibleApi\AudibleApi.csproj" />
+		<ProjectReference Include="..\external\Rn.Suite\src\lib\Rnd.IO\Rnd.IO.csproj" />
+		<ProjectReference Include="..\external\Rn.Suite\src\lib\Rnd.Lib\Rnd.Lib.csproj" />
+		<ProjectReference Include="..\external\Rn.Suite\src\lib\Rnd.Logging\Rnd.Logging.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Update="appsettings.*.json">
+			<DependentUpon>appsettings.json</DependentUpon>
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="appsettings.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
 </Project>

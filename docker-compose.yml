@@ -1,0 +1,16 @@
+version: '3.3'
+services:
+    audible-sync:
+        container_name: audible-sync
+        volumes:
+            # - './data/tmp:/data/tmp'
+            # - './data/out:/data/out'
+            # - './data/settings:/data/settings'
+            - './data:/data'
+        # image: a-sync
+        build: 
+            context: ./
+            dockerfile: Dockerfile
+            # image: audible-sync
+        # environment: 
+        #     - DHPARAM_GENERATION=false
