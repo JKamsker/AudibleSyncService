@@ -11,3 +11,5 @@
 # Run without Docker
 [For running without Docker, please click here](/docs/getting-started-visual-studio.md)
 
+# Enable scheduling
+[To enable scheduling, please click here](/docs/configure-recurring-sync.md)
