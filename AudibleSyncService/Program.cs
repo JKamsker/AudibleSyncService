@@ -19,6 +19,8 @@ using System.Diagnostics;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System;
+using Quartz;
+using System.Collections.Specialized;
 
 namespace AudibleSyncService
 {
@@ -56,23 +58,73 @@ namespace AudibleSyncService
                 .Run();
         }
 
-
-
-
         private static void ConfigureServices(HostBuilderContext ctx, IServiceCollection services)
         {
+            var audibleConfiguration = ctx.Configuration.GetSection("Audible").Get<AudibleConfig>();
+
             services
                 .Configure<AudibleConfig>(ctx.Configuration.GetSection("Audible"))
-                .RegisterApi();
+                .RegisterApi()
+                .AddTransient<AudibleSyncService>()
+                .AddSingleton<ApiLockService>()
+                ;
 
-            if (ctx.Configuration.GetSection("AUDIBLE:SETUP").Get<bool>())
+
+            if (audibleConfiguration.Setup)
             {
                 services.AddHostedService<AudibleSetupService>();
+                return;
             }
-            else
+
+            // only false will prevent immediately run
+            if (audibleConfiguration?.Schedule?.RunImmediately is true or null)
             {
                 services.AddHostedService<AudibleSyncWorkerService>();
             }
+
+
+            services.AddScheduledExecution(ctx.Configuration);
+        }
+
+
+
+        private static void QuarzTest01()
+        {
+            // you can have base properties
+            var properties = new NameValueCollection();
+
+            // and override values via builder
+            var sched = SchedulerBuilder.Create(properties)
+            // default max concurrency is 10
+            .UseDefaultThreadPool(x => x.MaxConcurrency = 5)
+            // this is the default 
+            // .WithMisfireThreshold(TimeSpan.FromSeconds(60))
+            .UsePersistentStore(x =>
+            {
+                // force job data map values to be considered as strings
+                // prevents nasty surprises if object is accidentally serialized and then 
+                // serialization format breaks, defaults to false
+                x.UseProperties = true;
+                x.UseClustering();
+                // there are other SQL providers supported too 
+                x.UseSQLite("my connection string");
+
+                // this requires Quartz.Serialization.Json NuGet package
+                x.UseJsonSerializer();
+            })
+            // job initialization plugin handles our xml reading, without it defaults are used
+            // requires Quartz.Plugins NuGet package
+            .UseXmlSchedulingConfiguration(x =>
+            {
+                x.Files = new[] { "~/quartz_jobs.xml" };
+                // this is the default
+                x.FailOnFileNotFound = true;
+                // this is not the default
+                x.FailOnSchedulingError = true;
+            })
+            .BuildScheduler();
         }
     }
+
+
 }

@@ -22,6 +22,16 @@
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
 
 		<PackageReference Include="Open.ChannelExtensions" Version="5.1.3" />
+
+		<PackageReference Include="Quartz" Version="3.3.3" />
+
+		<PackageReference Include="Quartz.Extensions.DependencyInjection" Version="3.3.3" />
+
+		<PackageReference Include="Quartz.Extensions.Hosting" Version="3.3.3" />
+
+		<PackageReference Include="Quartz.Plugins" Version="3.3.3" />
+
+		<PackageReference Include="Quartz.Serialization.Json" Version="3.3.3" />
 	</ItemGroup>
 	
 	<ItemGroup>
