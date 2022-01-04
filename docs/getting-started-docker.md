@@ -1,12 +1,16 @@
 ## 1. Setup
 
-To install docker, head over to [Get-Docker](https://docs.docker.com/get-docker/)
 
-On linux, you can use this script to insall all dependencies:
+On linux, you can use this script to install all dependencies:
 ```bash
 curl -fsSL https://get.docker.com | bash
 apt update && apt install -y docker-compose
 ```
+
+Otherwise
+- To install docker, head over to [Get-Docker](https://docs.docker.com/get-docker/)
+- To install docker-compose,  [follow theese instructions](https://docs.docker.com/compose/install/)
+
 
 Create a ``docker-compose.yml`` file with following content:
 
