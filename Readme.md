@@ -1,6 +1,11 @@
 
 # AudibleSyncService
 
+## QuickStart
+(For a quickstart click here)[/docs/getting-started-docker.md]
+
+https://github.com/JKamsker/AudibleSyncService/tree/Scheduler
+
 ## 1. Setup
 
 You can either  [1.0.1 Run ready-made container ](#101-run-ready-made-container ) or [1.0.2 Run from source](#102-run-from-source) </br>

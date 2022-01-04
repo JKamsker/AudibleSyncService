@@ -43,3 +43,7 @@ To run the service in headless mode afterwards use:
 ```bash
 docker-compose up -d
 ```
+
+## FAQ
+Q: **Which Locales are available?** </br>
+A: ``germany``, ``us``, ``uk``, ``australia``, ``canada``, ``france``,  ``india``, ``italy``, ``japan``, ``spain`` (see [Source](https://github.com/JKamsker/AudibleApi/blob/dbb51c6183db831c2c1b518d613978df6e7d4061/AudibleApi/Localization.cs#L20)) 
