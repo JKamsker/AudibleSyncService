@@ -26,7 +26,7 @@ jobs:
       - 
         name: Calculate Publishing Variables
         run: |
-          IMAGE_ID=docker.pkg.github.com/${{ github.repository }}
+          IMAGE_ID=${{ github.repository }}
 
           # Change all uppercase to lowercase
           IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
@@ -38,30 +38,40 @@ jobs:
 
           echo "IMAGE_ID=$IMAGE_ID"
           echo "VERSION=$VERSION"
-      # - 
-      #   uses: actions/setup-dotnet@v1
-      #   with:
-      #     dotnet-version: '6.0.x'
-      - 
-        name: Init Project
-        run: |
-          chmod +x ./git-init.sh
-          ./git-init.sh
-      - 
-        name: Build Base Api
-        run: docker build -t audible_sync_service .
-      - 
-        name: Log into registry
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin
       - 
         name: Echoing the publishing Variables
         run: |
           echo IMAGE_ID="${{env.IMAGE_ID}}"
           echo VERSION="${{env.VERSION}}"
       - 
-        name: Push image
+        name: Init Project
         run: |
-          CURRENT_ID=$IMAGE_ID/audible_sync_service
+          chmod +x ./git-init.sh
+          ./git-init.sh
+      - 
+        name: Build project
+        run: docker build -t audible_sync_service .
+      - 
+        name: Log into GitHub registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin
+      - 
+        name: Push image to Github Registry
+        run: |
+          # Push to github registry
+          CURRENT_ID=docker.pkg.github.com/$IMAGE_ID/audible_sync_service
+          docker tag audible_sync_service $CURRENT_ID:$VERSION
+          docker tag audible_sync_service $CURRENT_ID:latest
+
+          docker push $CURRENT_ID:$VERSION
+          docker push $CURRENT_ID:latest
+      - 
+        name: Log into GitHub registry
+        run: echo "${{ secrets.DOCKER_HUB_SECRET }}" | docker login -u JKamsker --password-stdin
+      - 
+        name: Push image to Docker Registry
+        run: |
+          # Push to github registry
+          CURRENT_ID=jkamsker/audible_sync_service
           docker tag audible_sync_service $CURRENT_ID:$VERSION
           docker tag audible_sync_service $CURRENT_ID:latest
 
