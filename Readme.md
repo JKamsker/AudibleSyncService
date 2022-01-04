@@ -2,7 +2,7 @@
 # AudibleSyncService
 
 ## QuickStart
-(For a quickstart click here)[/docs/getting-started-docker.md]
+[For a quickstart click here](/docs/getting-started-docker.md)
 
 https://github.com/JKamsker/AudibleSyncService/tree/Scheduler
 
