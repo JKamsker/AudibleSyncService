@@ -1,28 +1,24 @@
-﻿using Microsoft.Extensions.Hosting;
-
+﻿
 using System;
-using System.IO;
 using System.Threading.Tasks;
-using System.Threading;
-using System.Net.Http;
-using AAXClean;
+
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json.Linq;
-using Dinah.Core.Collections.Generic;
+
+using Quartz;
 
 namespace AudibleSyncService
 {
-    public class AudibleSyncWorkerService : BackgroundService
+    public class ScheduledSynchJob : IJob
     {
         private readonly AudibleSyncService _syncService;
         private readonly ApiLockService _apiLockService;
-        private readonly ILogger<AudibleSyncWorkerService> _logger;
+        private readonly ILogger<ScheduledSynchJob> _logger;
 
-        public AudibleSyncWorkerService
+        public ScheduledSynchJob
         (
             AudibleSyncService syncService,
             ApiLockService apiLockService,
-            ILogger<AudibleSyncWorkerService> logger
+            ILogger<ScheduledSynchJob> logger
         )
         {
             _syncService = syncService;
@@ -30,9 +26,13 @@ namespace AudibleSyncService
             _logger = logger;
         }
 
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        public async Task Execute(IJobExecutionContext context)
         {
-            _logger.LogInformation("Executing sync because of startup");
+            _logger.LogInformation("Executing sync because of a trigger");
+
+            var nextFireTimeUtc = context.Trigger.GetNextFireTimeUtc();
+            var nextFireTime = nextFireTimeUtc.Value.ToLocalTime();
+            _logger.LogInformation($"NextFireTime will be {nextFireTime} ({nextFireTimeUtc} UTC)");
 
             try
             {
@@ -44,7 +44,7 @@ namespace AudibleSyncService
                 }
                 try
                 {
-                    await _syncService.ExecuteAsync(stoppingToken);
+                    await _syncService.ExecuteAsync(context.CancellationToken);
                 }
                 finally
                 {
@@ -56,7 +56,6 @@ namespace AudibleSyncService
                 _logger.LogCritical(ex, $"Sync failed: {ex.Message}");
                 throw;
             }
-
         }
     }
 }

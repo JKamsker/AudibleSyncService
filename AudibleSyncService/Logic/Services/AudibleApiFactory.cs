@@ -50,12 +50,6 @@ namespace AudibleSyncService
                 jsonPath = null;
             }
 
-
-            //if (!File.Exists(identityFile))
-            //{
-            //    EzApiCreator
-            //}
-
             return await EzApiCreator.GetApiAsync
             (
                 _loginCallback,
@@ -65,11 +59,6 @@ namespace AudibleSyncService
             );
         }
 
-        private string GetConfigPath()
-        {
-            return string.IsNullOrEmpty(_config.Environment?.SettingsBasePath)
-                ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "audibleSyncWorker")
-                : _config.Environment.SettingsBasePath;
-        }
+        private string GetConfigPath() => AudibleEnvironment.EvaluateSettingsBasePath(_config.Environment);
     }
 }
