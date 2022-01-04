@@ -6,9 +6,10 @@ On linux, you can use this script to insall all dependencies:
 ```bash
 curl -fsSL https://get.docker.com | bash
 apt update && apt install -y docker-compose
+```
 
 Create a ``docker-compose.yml`` file with following content:
-```
+
 
 ````yaml
 version: '3.3'
