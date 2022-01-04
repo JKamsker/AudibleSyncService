@@ -1,6 +1,4 @@
-## 1. Setup
-
-
+# 1. Setup Dependencies
 On linux, you can use this script to install all dependencies:
 ```bash
 curl -fsSL https://get.docker.com | bash
@@ -14,7 +12,7 @@ Otherwise
 
 Create a ``docker-compose.yml`` file with following content:
 
-
+# 2. Setup Docker-Compose
 ````yaml
 version: '3.3'
 services:
@@ -43,6 +41,7 @@ docker-compose run --rm audible_sync bash -setup
 
 Please note, that the worker will exit with exit code ``-1`` in non-setup & non-headless mode when audible prompts for 2FA. So, watch out for those events. </br>
 
+# Running Container
 To run the service in headless mode afterwards use:
 ```bash
 docker-compose up -d
