@@ -7,14 +7,6 @@ You can either  [1.0.1 Run ready-made container ](#101-run-ready-made-container 
 Then continue with [### 1.0.3 Configure environment variables](#103-configure-environment-variables)
 
 ### 1.0.1 Run ready-made container
-
-#### 1.0.1.0 Login to the github registry
-- https://github.com/settings/tokens
-- Generate new token with the ``read:packages`` scope
-- Login using the following command while replacing ``ghp_SUPERSECURETOKEN`` and ``JKamsker`` with your values
--- ``echo "ghp_SUPERSECURETOKEN" | docker login docker.pkg.github.com -u "JKamsker" --password-stdin``
-
-#### 1.0.1.1 Create a docker-compose.yml
 ````yaml
 version: '3.3'
 services:
@@ -26,7 +18,7 @@ services:
    - Audible__Locale=${AUDIBLE_LOCALE} # See FAQ for more
    - Audible__Credentials__UserName=${AUDIBLE_USERNAME} # Replace with your username or use .env
    - Audible__Credentials__Password=${AUDIBLE_PASSWORD} # Replace with your password or use .env
-  image: ghcr.io/jkamsker/audiblesyncservice/audible_sync_service:latest
+  image: jkamsker/audible_sync_service:latest
 ````
 
 Head over to [### 1.0.3 Configure environment variables](#103-configure-environment-variables)
@@ -48,7 +40,7 @@ docker-compose build
 Create a ``.env`` file with following contents (Replace with your credentials): 
 ```text
 AUDIBLE_LOCALE=germany
-AUDIBLE_USERNAME=jonas.kamsker@mail.com
+AUDIBLE_USERNAME=jkamsker@fakemail.com
 AUDIBLE_PASSWORD=MySuperSecurePassword
 ```
 
@@ -63,8 +55,6 @@ Please note, that the worker will exit with exit code ``-1`` in non-setup & non-
 ```bash
 docker-compose up -d
 ```
-
-
 
 ## Without Docker
 Open in VS and create ``AudibleSyncService/appsettings.Development.json`` 

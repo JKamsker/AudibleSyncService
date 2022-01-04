@@ -8,7 +8,7 @@ services:
           - Audible__Locale=germany
           - Audible__Credentials__UserName=${AUDIBLE_USERNAME}
           - Audible__Credentials__Password=${AUDIBLE_PASSWORD}
-        image: ghcr.io/jkamsker/audiblesyncservice/audible_sync_service:latest # Run with latest version
-        # build: 
-        #     context: ./
-        #     dockerfile: Dockerfile
+        # image: ghcr.io/jkamsker/audiblesyncservice/audible_sync_service:latest # Run with latest version
+        build: 
+            context: ./
+            dockerfile: Dockerfile
