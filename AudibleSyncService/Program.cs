@@ -30,6 +30,9 @@ namespace AudibleSyncService
     {
         static async Task Main(string[] args)
         {
+            ATL.Settings.FileBufferSize = 5_000_000;
+            ATL.Settings.MP4_createNeroChapters = false;
+
             var parsed = CommandLine.Parser.Default.ParseArguments<CommandLineOptions>(args);
 
             Host

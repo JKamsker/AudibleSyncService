@@ -1,5 +1,7 @@
 ﻿using AAXClean;
 
+using ATL;
+
 using AudibleApi;
 using AudibleApi.Common;
 
@@ -9,12 +11,15 @@ using Rnd.Lib.Utils;
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Schema;
 
 using WorkerService.Models.Configuration;
 
@@ -173,15 +178,53 @@ namespace AudibleSyncService
                 throw new Exception("Conversion failed");
             }
 
-            using var tagFile = TagLib.File.Create(DecryptedFile.FullName);
-            tagFile.Tag.AmazonId = _item.Asin;
-            tagFile.Tag.Composers = _item.Narrators?.Select(x => x.Name).ToArray();
-            tagFile.Tag.AlbumArtists = _item.Authors?.Select(x => x.Name).ToArray();
-            
-            //_item.Publisher
-            
+            //using var tagFile = TagLib.File.Create(DecryptedFile.FullName);
+            //tagFile.Tag.AmazonId = _item.Asin;
+            //tagFile.Tag.Composers = _item.Narrators?.Select(x => x.Name).ToArray();
+            //tagFile.Tag.AlbumArtists = _item.Authors?.Select(x => x.Name).ToArray();
 
-            tagFile.Save();
+            //tagFile.Save();
+
+            try
+            {
+                var track = new Track(DecryptedFile.FullName);
+                track.AdditionalFields = new Dictionary<string, string>();
+
+                track.Artist = _item.Authors?.Select(x => x.Name).JoinString("; ");
+                track.Title = _item.Title;
+                track.Album = _item.Title;
+
+                track.AdditionalFields["TIT3"] = _item.Subtitle;
+                track.AdditionalFields["----:com.apple.iTunes:subtitle"] = _item.Subtitle;
+
+                track.Publisher = _item.PublisherName;
+                track.AdditionalFields["----:com.apple.iTunes:publisher"] = _item.PublisherName;
+
+                track.Year = _item.DatePublished?.Year;
+                track.Composer = _item.Narrators?.Select(x => x.Name).JoinString("; ");
+
+                track.Description = Regex.Replace(_item.Description, "<.*?>", String.Empty);
+                track.AdditionalFields["----:com.apple.iTunes:description"] = track.Description;
+                track.Genre = _item.Categories?.Select(x => x.Name).JoinString("; ");
+
+                var series = _item.Series?.FirstOrDefault();
+                if (series != null)
+                {
+                    track.AdditionalFields["----:com.apple.iTunes:series"] = series.SeriesName;
+                    track.AdditionalFields["----:com.apple.iTunes:series-part"] = series.Sequence;
+                }
+
+                track.AdditionalFields["CDEK"] = _item.Asin;
+                track.AdditionalFields["----:com.apple.iTunes:ASIN"] = _item.Asin;
+
+                track.AdditionalFields["rldt"] = _item.DatePublished?.ToString("dd-MMM-yyyy", new CultureInfo("en-US"));
+                track.Save();
+            }
+            catch (Exception)
+            {
+                _logger.LogWarning("Tagging failed");
+            }
+           
         }
 
         public void MoveToOutput()
