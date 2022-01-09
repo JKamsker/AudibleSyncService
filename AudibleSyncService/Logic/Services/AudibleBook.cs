@@ -190,22 +190,35 @@ namespace AudibleSyncService
                 var track = new Track(DecryptedFile.FullName);
                 track.AdditionalFields = new Dictionary<string, string>();
 
-                track.Artist = _item.Authors?.Select(x => x.Name).JoinString("; ");
+                track.Artist = _item.Authors?.Select(x => x.Name).JoinString("; ") ?? String.Empty;
                 track.Title = _item.Title;
                 track.Album = _item.Title;
 
-                track.AdditionalFields["TIT3"] = _item.Subtitle;
-                track.AdditionalFields["----:com.apple.iTunes:subtitle"] = _item.Subtitle;
+                if (_item.Subtitle is not null)
+                {
+                    track.AdditionalFields["TIT3"] = _item.Subtitle;
+                    track.AdditionalFields["----:com.apple.iTunes:subtitle"] = _item.Subtitle;
+                }
 
-                track.Publisher = _item.PublisherName;
-                track.AdditionalFields["----:com.apple.iTunes:publisher"] = _item.PublisherName;
+                if (_item.PublisherName is not null)
+                {
+                    track.Publisher = _item.PublisherName;
+                    track.AdditionalFields["----:com.apple.iTunes:publisher"] = _item.PublisherName;
+                }
 
                 track.Year = _item.DatePublished?.Year;
-                track.Composer = _item.Narrators?.Select(x => x.Name).JoinString("; ");
+                track.Composer = _item.Narrators?.Select(x => x.Name).JoinString("; ") ?? String.Empty;
 
-                track.Description = Regex.Replace(_item.Description, "<.*?>", String.Empty);
-                track.AdditionalFields["----:com.apple.iTunes:description"] = track.Description;
-                track.Genre = _item.Categories?.Select(x => x.Name).JoinString("; ");
+                if (_item.Description is not null)
+                {
+                    var description = _item.Description;
+                    description = Regex.Replace(description, "<.*?>", String.Empty);
+
+                    track.Description = description;
+                    track.AdditionalFields["----:com.apple.iTunes:description"] = track.Description;
+                }
+
+                track.Genre = _item.Categories?.Select(x => x.Name).JoinString("; ") ?? string.Empty;
 
                 var series = _item.Series?.FirstOrDefault();
                 if (series != null)
@@ -217,14 +230,14 @@ namespace AudibleSyncService
                 track.AdditionalFields["CDEK"] = _item.Asin;
                 track.AdditionalFields["----:com.apple.iTunes:ASIN"] = _item.Asin;
 
-                track.AdditionalFields["rldt"] = _item.DatePublished?.ToString("dd-MMM-yyyy", new CultureInfo("en-US"));
+                track.AdditionalFields["rldt"] = _item.DatePublished?.ToString("dd-MMM-yyyy", new CultureInfo("en-US")) ?? string.Empty;
                 track.Save();
             }
             catch (Exception)
             {
                 _logger.LogWarning("Tagging failed");
             }
-           
+
         }
 
         public void MoveToOutput()
