@@ -1,7 +1,7 @@
 
 # AudibleSyncService
-AudibleSynchService is a Service that synchronizes your ``Audible`` library to your local Drive.
-[It also integrates nicely](/docs/udiobookshelf-integration.md) with [audiobookshelf](https://github.com/advplyr/audiobookshelf)
+AudibleSynchService is a Service that synchronizes your ``Audible`` library to your local Drive. <br/>
+[It also integrates nicely](/docs/audiobookshelf-integration.md) with [audiobookshelf](https://github.com/advplyr/audiobookshelf)
 
 ## QuickStart
 [For a quickstart click here](/docs/getting-started-docker.md)
@@ -18,8 +18,7 @@ AudibleSynchService is a Service that synchronizes your ``Audible`` library to y
 
 
 # Integrate with audiobookshelf
-[To integrate with audiobookshelf, please click here](/docs/udiobookshelf-integration.md)
-
+[To integrate with audiobookshelf, please click here](/docs/audiobookshelf-integration.md)
 
 
 # Disclaimer
