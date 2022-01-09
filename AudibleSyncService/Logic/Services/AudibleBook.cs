@@ -112,8 +112,11 @@ namespace AudibleSyncService
                 {
                     await downloadResponse.Content.CopyToAsync(fs, token);
                 }
+                //_item.Relationships
 
                 _license = (contentLic?.Voucher?.Key, contentLic?.Voucher?.Iv);
+                //contentLic.ContentMetadata.ChapterInfo
+
                 _state = DownloadState.Downloaded;
             }
             catch (Exception ex)
@@ -131,8 +134,8 @@ namespace AudibleSyncService
                     {
                         EncryptedFile.EnsureDeleted();
                     }
-                    catch 
-                    {        
+                    catch
+                    {
                     }
                 }
             }
@@ -160,7 +163,8 @@ namespace AudibleSyncService
                 aaxcFile.Cancel();
             });
 
-            var res = aaxcFile.ConvertToMp4a(DecryptedFile.OpenWrite());
+            var res = aaxcFile.ConvertToMp4a(DecryptedFile.EnsureDeleted().OpenWrite());
+
             finished = true;
             token.ThrowIfCancellationRequested();
 
@@ -168,6 +172,16 @@ namespace AudibleSyncService
             {
                 throw new Exception("Conversion failed");
             }
+
+            using var tagFile = TagLib.File.Create(DecryptedFile.FullName);
+            tagFile.Tag.AmazonId = _item.Asin;
+            tagFile.Tag.Composers = _item.Narrators?.Select(x => x.Name).ToArray();
+            tagFile.Tag.AlbumArtists = _item.Authors?.Select(x => x.Name).ToArray();
+            
+            //_item.Publisher
+            
+
+            tagFile.Save();
         }
 
         public void MoveToOutput()
@@ -177,7 +191,7 @@ namespace AudibleSyncService
             var target = GetOutputPath().EnsureParentCreated();
 
             DecryptedFile.MoveTo(target);
-           
+
         }
 
         private FileInfo GetOutputPath()

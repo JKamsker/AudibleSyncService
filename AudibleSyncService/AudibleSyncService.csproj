@@ -32,6 +32,8 @@
 		<PackageReference Include="Quartz.Plugins" Version="3.3.3" />
 
 		<PackageReference Include="Quartz.Serialization.Json" Version="3.3.3" />
+
+		<PackageReference Include="TagLibSharp" Version="2.2.0" />
 	</ItemGroup>
 	
 	<ItemGroup>
