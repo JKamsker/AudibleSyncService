@@ -7,7 +7,7 @@ RUN dotnet restore
 
 # Copy everything else and build
 # RUN dotnet publish -c Release -o /out
-RUN dotnet publish -c Release -o /out .\AudibleSyncService\AudibleSyncService.csproj
+RUN dotnet publish -c Release -o /out ./AudibleSyncService/AudibleSyncService.csproj
 
 # Build runtime image
 FROM mcr.microsoft.com/dotnet/runtime:6.0
