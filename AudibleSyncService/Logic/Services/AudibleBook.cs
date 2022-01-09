@@ -231,6 +231,15 @@ namespace AudibleSyncService
                 track.AdditionalFields["----:com.apple.iTunes:ASIN"] = _item.Asin;
 
                 track.AdditionalFields["rldt"] = _item.DatePublished?.ToString("dd-MMM-yyyy", new CultureInfo("en-US")) ?? string.Empty;
+
+                if (!string.IsNullOrEmpty(_item.Language))
+                {
+                    // Waiting for feedback on https://github.com/advplyr/audiobookshelf/issues/305
+                    track.AdditionalFields["----:com.apple.iTunes:LANGUAGE"] = _item.Language; 
+                }
+                track.AdditionalFields["----:com.apple.iTunes:DateAdded"] = _item.DateAdded.ToString("dd-MMM-yyyy", new CultureInfo("en-US"));
+
+
                 track.Save();
             }
             catch (Exception)

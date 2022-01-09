@@ -83,8 +83,12 @@ namespace AudibleSyncService
 
             //var myBooks = items.Where(x=>x.Series(m))
 
+
+
             var books = items
-              //.Where(x => x.Series?.Any(m => m.Title.Contains("Bob")) == true)
+              //.Where(x => x.Series?.Any(m => m.Title.Contains("Physiker")) == true)
+              //.Where(x=>x.Asin == "B07GS66BZX")
+              .Where(x => x.ContentDeliveryType != "content_delivery_type") // Series??
               .Select(item => new AudibleBook(client, item, _config.Environment, _loggerFactory.CreateLogger<AudibleBook>()))
               .Where(x => !x.IsSeries)
               .Where(x => !x.OutputExists())
