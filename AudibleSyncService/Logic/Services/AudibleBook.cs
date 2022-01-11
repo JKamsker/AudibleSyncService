@@ -178,12 +178,6 @@ namespace AudibleSyncService
                 throw new Exception("Conversion failed");
             }
 
-            //using var tagFile = TagLib.File.Create(DecryptedFile.FullName);
-            //tagFile.Tag.AmazonId = _item.Asin;
-            //tagFile.Tag.Composers = _item.Narrators?.Select(x => x.Name).ToArray();
-            //tagFile.Tag.AlbumArtists = _item.Authors?.Select(x => x.Name).ToArray();
-
-            //tagFile.Save();
 
             try
             {
