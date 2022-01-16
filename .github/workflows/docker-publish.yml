@@ -20,6 +20,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+        with:
+            submodules: 'true'
       - 
         name: Output Run Number
         run: echo ${{github.run_number}}
