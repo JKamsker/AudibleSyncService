@@ -53,10 +53,15 @@ namespace AudibleSyncService
 
         static async Task Main(string[] args)
         {
+            GlobalFFOptions.Configure(x =>
+            {
+                x.BinaryFolder = "/deps/ffmpeg";
+            });
+
             ATL.Settings.FileBufferSize = 5_000_000;
             //ATL.Settings.MP4_createNeroChapters = false;
             //var log = new LoggingTest();
-            var newName = @"F:\tmp\AudibleSync\analysis\Der Abgrund jenseits der Träume\output - Kopie.m4b";
+            //var newName = @"F:\tmp\AudibleSync\analysis\Der Abgrund jenseits der Träume\output - Kopie.m4b";
 
             //var file = @"F:\tmp\AudibleSync\tmp\308b2ea9-9543-49dd-a578-af628a37b1b1\audiobook.aaxc".AsFileInfo();
             //await FFMpegArguments.FromFileInput(file, x => x.WithAudibleEncryptionKeys("b763815c46dedfd64e180d06ac635ae0", "cbb27c67358c273d867607b28e341587"))

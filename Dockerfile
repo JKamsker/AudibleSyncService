@@ -6,13 +6,22 @@ ADD . .
 RUN dotnet restore
 
 # Copy everything else and build
-# RUN dotnet publish -c Release -o /out
 RUN dotnet publish -c Release -o /out ./AudibleSyncService/AudibleSyncService.csproj
+
+
+FROM ubuntu:latest AS ffmpeg-src
+WORKDIR /app
+RUN apt update -y && \
+	apt install wget unzip -y && \
+	wget https://github.com/ffbinaries/ffbinaries-prebuilt/releases/download/v4.4.1/ffmpeg-4.4.1-linux-64.zip -O ffmpeg.zip &&\
+	unzip ffmpeg.zip
+
 
 # Build runtime image
 FROM mcr.microsoft.com/dotnet/runtime:6.0
 WORKDIR /app
-COPY --from=build-env /out .
+#COPY --from=build-env /out .
+COPY --from=ffmpeg-src /app/ffmpeg /deps/ffmpeg/ffmpeg
 
 #install ffmpeg
 RUN apt update -y && apt install ffmpeg -y
