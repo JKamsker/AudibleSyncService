@@ -20,7 +20,7 @@ RUN apt update -y && \
 # Build runtime image
 FROM mcr.microsoft.com/dotnet/runtime:6.0
 WORKDIR /app
-#COPY --from=build-env /out .
+COPY --from=build-env /out .
 COPY --from=ffmpeg-src /app/ffmpeg /deps/ffmpeg/ffmpeg
 
 #install ffmpeg
