@@ -14,4 +14,4 @@
 	url = https://github.com/Zeugma440/atldotnet.git
 [submodule ".\\external\\FFMpegCore"]
 	path = .\\external\\FFMpegCore
-	url = https://github.com/rosenbjerg/FFMpegCore.git
+	url = https://github.com/JKamsker/FFMpegCore.git
