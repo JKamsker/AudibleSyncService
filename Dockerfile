@@ -14,9 +14,15 @@ FROM mcr.microsoft.com/dotnet/runtime:6.0
 WORKDIR /app
 COPY --from=build-env /out .
 
+#install ffmpeg
+RUN apt update -y && apt install ffmpeg -y
+
 ENV Audible__Environment__TempPath=/data/tmp
 ENV Audible__Environment__OutputPath=/data/out
 ENV Audible__Environment__SettingsBasePath=/data/settings
 ENV Audible__Environment__OutputPattern=%Author%/%Series%/%title%/%title%.%ext%
+
+ENV Audible__Environment__UseFFmpeg=true
+
 
 ENTRYPOINT ["dotnet", "AudibleSyncService.dll"]

@@ -5,12 +5,17 @@ using ATL;
 using AudibleApi;
 using AudibleApi.Common;
 
+using AudibleSyncService.Logic.Services;
+
+using FFMpegCore;
+
 using Microsoft.Extensions.Logging;
 
 using Rnd.Lib.Utils;
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -30,6 +35,7 @@ namespace AudibleSyncService
         private readonly Api _apiClient;
         private readonly Item _item;
         private readonly AudibleEnvironment _audibleEnvironment;
+        private readonly Tagger _tagger;
         private readonly ILogger<AudibleBook> _logger;
 
         private (string Key, string Iv) _license;
@@ -46,27 +52,47 @@ namespace AudibleSyncService
             Api api,
             Item item,
             AudibleEnvironment audibleEnvironment,
+            Tagger tagger,
             ILogger<AudibleBook> logger
         )
         {
             _apiClient = api;
             _item = item;
             _audibleEnvironment = audibleEnvironment;
+            _tagger = tagger;
             _logger = logger;
         }
 
-        public Guid TempId { get; } = Guid.NewGuid();
+        public Guid TempId { get; private set; } = Guid.NewGuid();
 
         public FileInfo EncryptedFile => GetTempDirectory().GetFile("audiobook.aaxc");
         public FileInfo DecryptedFile => GetTempDirectory().GetFile("audiobook.m4b");
 
-        private DirectoryInfo GetTempDirectory()
+        private DirectoryInfo GetTempDirectory(bool create = true)
         {
             var path = string.IsNullOrEmpty(_audibleEnvironment.TempPath)
                 ? Path.Combine(Path.GetTempPath(), "audibleSyncWorker")
                 : _audibleEnvironment.TempPath;
 
-            return path.AsDirectoryInfo().CreateSubdirectory(TempId.ToString()).EnsureCreated();
+            var dir = path.AsDirectoryInfo().CreateSubdirectory(TempId.ToString());
+            return create ? dir.EnsureCreated() : dir;
+        }
+
+        public AudibleBook OverwriteTempId(Guid guid)
+        {
+            GetTempDirectory(false).EnsureDeleted();
+            TempId = guid;
+            return this;
+        }
+
+        public async ValueTask<(string Key, string Iv)> GetLicense()
+        {
+            if (_license == default)
+            {
+                UpdateLicense(await _apiClient.GetDownloadLicenseAsync(_item.Asin));
+            }
+
+            return _license;
         }
 
         public bool DownloadSuccessful => _state == DownloadState.Downloaded;
@@ -119,7 +145,7 @@ namespace AudibleSyncService
                 }
                 //_item.Relationships
 
-                _license = (contentLic?.Voucher?.Key, contentLic?.Voucher?.Iv);
+                UpdateLicense(contentLic);
                 //contentLic.ContentMetadata.ChapterInfo
 
                 _state = DownloadState.Downloaded;
@@ -146,6 +172,37 @@ namespace AudibleSyncService
             }
         }
 
+        private void UpdateLicense(ContentLicense contentLic)
+        {
+            _license = (contentLic?.Voucher?.Key, contentLic?.Voucher?.Iv);
+        }
+
+
+        private bool FFMpegExists()
+        {
+            try
+            {
+                var path = GlobalFFOptions.GetFFMpegBinaryPath();
+                if (string.IsNullOrEmpty(path))
+                {
+                    return false;
+                }
+
+                var codecs = FFMpeg.GetVideoCodecs();
+                if (!codecs.Any())
+                {
+                    return false;
+                }
+            }
+            catch (Exception)
+            {
+
+                return false;
+            }
+
+            return true;
+        }
+
         public async Task DecryptAsync(CancellationToken token = default)
         {
             if (_state != DownloadState.Downloaded)
@@ -153,94 +210,66 @@ namespace AudibleSyncService
                 throw new InvalidOperationException("File has not been downloaded.");
             }
 
-            using var aaxcFile = new AaxFile(EncryptedFile.OpenRead());
-            aaxcFile.SetDecryptionKey(_license.Key, _license.Iv);
-
-            var chap = aaxcFile.GetChapterInfo();
-
-            var finished = false;
-            token.Register(() =>
+            //todo make code not look like shit
+            if (_audibleEnvironment.UseFFmpeg && FFMpegExists())
             {
-                if (finished)
+                //await FFMpegArguments.FromFileInput(EncryptedFile, x => x.WithAudibleEncryptionKeys(_license.Key, _license.Iv))
+                //    .MapMetaData()
+                //    .OutputToFile(DecryptedFile.FullName, true, x => x.WithTagVersion(3).DisableChannel(FFMpegCore.Enums.Channel.Video).CopyChannel(FFMpegCore.Enums.Channel.Audio))
+                //    .ProcessAsynchronously();
+                _logger.LogInformation("Using FFMPEG to decrypt the audiobook");
+                await FFMpegArguments.FromFileInput(EncryptedFile, x => x.WithAudibleEncryptionKeys(_license.Key, _license.Iv))
+                    .MapMetaData()
+                    .OutputToFile(DecryptedFile.FullName, true, x => x.WithTagVersion(3).CopyChannel(FFMpegCore.Enums.Channel.Both))
+                    .ProcessAsynchronously();
+            }
+            else
+            {
+                using var aaxcFile = new AaxFile(EncryptedFile.OpenRead());
+                aaxcFile.SetDecryptionKey(_license.Key, _license.Iv);
+
+                var chap = aaxcFile.GetChapterInfo();
+
+                var finished = false;
+                token.Register(() =>
                 {
-                    return;
+                    if (finished)
+                    {
+                        return;
+                    }
+                    aaxcFile.Cancel();
+                });
+
+                var res = aaxcFile.ConvertToMp4a(DecryptedFile.EnsureDeleted().OpenWrite());
+
+                finished = true;
+                token.ThrowIfCancellationRequested();
+
+                if (res == ConversionResult.Failed)
+                {
+                    throw new Exception("Conversion failed");
                 }
-                aaxcFile.Cancel();
-            });
-
-            var res = aaxcFile.ConvertToMp4a(DecryptedFile.EnsureDeleted().OpenWrite());
-
-            finished = true;
-            token.ThrowIfCancellationRequested();
-
-            if (res == ConversionResult.Failed)
-            {
-                throw new Exception("Conversion failed");
             }
 
+            _tagger.TryTagFile(DecryptedFile, _item);
+        }
 
-            try
+
+
+        /// <summary>
+        /// Todo if needed
+        /// </summary>
+        /// <returns></returns>
+        static async Task<byte[]> GetPicData()
+        {
+            var url = "https://m.media-amazon.com/images/I/511Sze5gENL._SL500_.jpg";
+            var picture = url;// _item.ProductImages.The500;
+            using (var client = new HttpClient())
             {
-                var track = new Track(DecryptedFile.FullName);
-                track.AdditionalFields = new Dictionary<string, string>();
-
-                track.Artist = _item.Authors?.Select(x => x.Name).JoinString("; ") ?? String.Empty;
-                track.Title = _item.Title;
-                track.Album = _item.Title;
-
-                if (_item.Subtitle is not null)
-                {
-                    track.AdditionalFields["TIT3"] = _item.Subtitle;
-                    track.AdditionalFields["----:com.apple.iTunes:subtitle"] = _item.Subtitle;
-                }
-
-                if (_item.PublisherName is not null)
-                {
-                    track.Publisher = _item.PublisherName;
-                    track.AdditionalFields["----:com.apple.iTunes:publisher"] = _item.PublisherName;
-                }
-
-                track.Year = _item.DatePublished?.Year;
-                track.Composer = _item.Narrators?.Select(x => x.Name).JoinString("; ") ?? String.Empty;
-
-                if (_item.Description is not null)
-                {
-                    var description = _item.Description;
-                    description = Regex.Replace(description, "<.*?>", String.Empty);
-
-                    track.Description = description;
-                    track.AdditionalFields["----:com.apple.iTunes:description"] = track.Description;
-                }
-
-                track.Genre = _item.Categories?.Select(x => x.Name).JoinString("; ") ?? string.Empty;
-
-                var series = _item.Series?.FirstOrDefault();
-                if (series != null)
-                {
-                    track.AdditionalFields["----:com.apple.iTunes:series"] = series.SeriesName;
-                    track.AdditionalFields["----:com.apple.iTunes:series-part"] = series.Sequence;
-                }
-
-                track.AdditionalFields["CDEK"] = _item.Asin;
-                track.AdditionalFields["----:com.apple.iTunes:ASIN"] = _item.Asin;
-
-                track.AdditionalFields["rldt"] = _item.DatePublished?.ToString("dd-MMM-yyyy", new CultureInfo("en-US")) ?? string.Empty;
-
-                if (!string.IsNullOrEmpty(_item.Language))
-                {
-                    // Waiting for feedback on https://github.com/advplyr/audiobookshelf/issues/305
-                    track.AdditionalFields["----:com.apple.iTunes:LANGUAGE"] = _item.Language; 
-                }
-                track.AdditionalFields["----:com.apple.iTunes:DateAdded"] = _item.DateAdded.ToString("dd-MMM-yyyy", new CultureInfo("en-US"));
-
-
-                track.Save();
+                var response = await client.GetAsync(picture);
+                var result = await response.Content.ReadAsByteArrayAsync();
+                return result;
             }
-            catch (Exception)
-            {
-                _logger.LogWarning("Tagging failed");
-            }
-
         }
 
         public void MoveToOutput()

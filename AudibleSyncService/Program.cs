@@ -21,17 +21,59 @@ using System.Threading.Tasks;
 using System;
 using Quartz;
 using System.Collections.Specialized;
+using FFMpegCore;
+using System.Threading;
+using System.Runtime.InteropServices;
+using ATL;
+using ATL.Logging;
+using System.Collections.Generic;
+using AudibleSyncService.Logic.Services;
+using Microsoft.Extensions.Options;
 
 namespace AudibleSyncService
 {
-
+    //$ 
+    //$ 
+    //$ 
     // ffmpeg.exe -audible_key [key] -audible_iv [iv] -i audiobook.aaxc -map_metadata 0 -id3v2_version 3 -codec:a copy -vn "audiobook.m4b"
     internal class Program
     {
+
+        static async Task<byte[]> GetPicData()
+        {
+            var url = "https://m.media-amazon.com/images/I/511Sze5gENL._SL500_.jpg";
+            var picture = url;// _item.ProductImages.The500;
+            using (var client = new HttpClient())
+            {
+                var response = await client.GetAsync(picture);
+                var result = await response.Content.ReadAsByteArrayAsync();
+                return result;
+            }
+        }
+
         static async Task Main(string[] args)
         {
             ATL.Settings.FileBufferSize = 5_000_000;
-            ATL.Settings.MP4_createNeroChapters = false;
+            //ATL.Settings.MP4_createNeroChapters = false;
+            //var log = new LoggingTest();
+            var newName = @"F:\tmp\AudibleSync\analysis\Der Abgrund jenseits der Träume\output - Kopie.m4b";
+
+            //var file = @"F:\tmp\AudibleSync\tmp\308b2ea9-9543-49dd-a578-af628a37b1b1\audiobook.aaxc".AsFileInfo();
+            //await FFMpegArguments.FromFileInput(file, x => x.WithAudibleEncryptionKeys("b763815c46dedfd64e180d06ac635ae0", "cbb27c67358c273d867607b28e341587"))
+            //      .MapMetaData()
+            //      .OutputToFile(file.AsFileInfo().Directory.GetFile("").FullName, true, x => x.WithTagVersion(3).CopyChannel(FFMpegCore.Enums.Channel.Both))
+            //      .ProcessAsynchronously();
+
+            //var newName = @"F:\tmp\AudibleSync\tmp\308b2ea9-9543-49dd-a578-af628a37b1b1\audiobook.m4b";
+
+
+            //var track = new Track(newName);
+            ////var data = await GetPicData();
+            ////track.EmbeddedPictures.Add(PictureInfo.fromBinaryData(data));
+
+            //track.Save();
+            //log.TestSyncMessage();
+
 
             var parsed = CommandLine.Parser.Default.ParseArguments<CommandLineOptions>(args);
 
@@ -61,15 +103,19 @@ namespace AudibleSyncService
                 .Run();
         }
 
+
+
         private static void ConfigureServices(HostBuilderContext ctx, IServiceCollection services)
         {
             var audibleConfiguration = ctx.Configuration.GetSection("Audible").Get<AudibleConfig>();
 
             services
                 .Configure<AudibleConfig>(ctx.Configuration.GetSection("Audible"))
+                .AddTransient<AudibleEnvironment>(x => x.GetRequiredService<IOptions<AudibleConfig>>().Value.Environment)
                 .RegisterApi()
                 .AddTransient<AudibleSyncService>()
                 .AddSingleton<ApiLockService>()
+                .AddSingleton<Tagger>()
                 ;
 
 
@@ -89,45 +135,65 @@ namespace AudibleSyncService
             services.AddScheduledExecution(ctx.Configuration);
         }
 
-
-
-        private static void QuarzTest01()
+        private static void TestFiles()
         {
-            // you can have base properties
-            var properties = new NameValueCollection();
+            var files = Directory.GetFiles(@"CENSORED\audiobookshelf\data\audible", "*.m4b", SearchOption.AllDirectories);
 
-            // and override values via builder
-            var sched = SchedulerBuilder.Create(properties)
-            // default max concurrency is 10
-            .UseDefaultThreadPool(x => x.MaxConcurrency = 5)
-            // this is the default 
-            // .WithMisfireThreshold(TimeSpan.FromSeconds(60))
-            .UsePersistentStore(x =>
-            {
-                // force job data map values to be considered as strings
-                // prevents nasty surprises if object is accidentally serialized and then 
-                // serialization format breaks, defaults to false
-                x.UseProperties = true;
-                x.UseClustering();
-                // there are other SQL providers supported too 
-                x.UseSQLite("my connection string");
+            var errors = 0;
 
-                // this requires Quartz.Serialization.Json NuGet package
-                x.UseJsonSerializer();
-            })
-            // job initialization plugin handles our xml reading, without it defaults are used
-            // requires Quartz.Plugins NuGet package
-            .UseXmlSchedulingConfiguration(x =>
+            Parallel.ForEach(files, file =>
             {
-                x.Files = new[] { "~/quartz_jobs.xml" };
-                // this is the default
-                x.FailOnFileNotFound = true;
-                // this is not the default
-                x.FailOnSchedulingError = true;
-            })
-            .BuildScheduler();
+                try
+                {
+                    var analysis = FFProbe.Analyse(file);
+                    var hasError = analysis.ErrorData.Any(x => x.Contains("Reserved bit set."));
+                    if (hasError)
+                    {
+                        Console.WriteLine($"'{file}' has error");
+                        Interlocked.Increment(ref errors);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"'{file}' threw exception! {ex}");
+
+
+                }
+
+            });
+
+            Console.WriteLine($"{errors} of {files.Length} files are invalid");
         }
     }
 
+    public class LoggingTest : ILogDevice
+    {
+        Log theLog = new Log();
+        List<Log.LogItem> messages = new();
 
+        public LoggingTest()
+        {
+            LogDelegator.SetLog(ref theLog);
+            theLog.Register(this);
+        }
+
+        public void TestSyncMessage()
+        {
+            //messages.Clear();
+
+            LogDelegator.GetLocateDelegate()("file name");
+            LogDelegator.GetLogDelegate()(Log.LV_DEBUG, "test message 1");
+            LogDelegator.GetLogDelegate()(Log.LV_WARNING, "test message 2");
+            foreach (var item in messages)
+            {
+                Console.WriteLine(item.Message);
+            }
+            //System.Console.WriteLine(messages[0].Message);
+        }
+
+        public void DoLog(Log.LogItem anItem)
+        {
+            messages.Add(anItem);
+        }
+    }
 }

@@ -40,6 +40,7 @@ namespace WorkerService.Models.Configuration
 
         public string OutputPath { get; set; }
         public string OutputPattern { get; set; }
+        public bool UseFFmpeg { get; set; }
 
         public static string EvaluateSettingsBasePath(AudibleEnvironment audibleEnvironment)
         {

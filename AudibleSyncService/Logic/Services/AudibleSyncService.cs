@@ -11,6 +11,12 @@ using Microsoft.Extensions.Logging;
 using System.Threading.Channels;
 using Open.ChannelExtensions;
 using System.Linq;
+using FFMpegCore;
+
+using MediaChannel = FFMpegCore.Enums.Channel;
+using ATL;
+using Microsoft.Extensions.DependencyInjection;
+using AudibleSyncService.Logic.Services;
 
 namespace AudibleSyncService
 {
@@ -81,17 +87,21 @@ namespace AudibleSyncService
             var items = client
                 .EnumerateLibraryItemsAsync();
 
-            //var myBooks = items.Where(x=>x.Series(m))
+            //var response = await client.GetLibraryBookAsync("B08W5C9RJL", LibraryOptions.ResponseGroupOptions.ALL_OPTIONS);
 
-
+            //var newName = @"F:\tmp\AudibleSync\analysis\Der Abgrund jenseits der Träume\output - Kopie.m4b";
+            //var track = new Track(newName);
+            //_sp.GetService<Tagger>().TryTagFile(newName.AsFileInfo(), response);
 
             var books = items
               //.Where(x => x.Series?.Any(m => m.Title.Contains("Physiker")) == true)
               //.Where(x=>x.Asin == "B07GS66BZX")
               .Where(x => x.ContentDeliveryType != "content_delivery_type") // Series??
-              .Select(item => new AudibleBook(client, item, _config.Environment, _loggerFactory.CreateLogger<AudibleBook>()))
+              //.Select(item => new AudibleBook(client, item, _config.Environment, _loggerFactory.CreateLogger<AudibleBook>()))
+              .Select(item => ActivatorUtilities.CreateInstance<AudibleBook>(_sp, client, item))
               .Where(x => !x.IsSeries)
               .Where(x => !x.OutputExists())
+              //.Take(1)
 
               ;
 
@@ -160,6 +170,38 @@ namespace AudibleSyncService
             }
         }
 
+        private async Task Test(Api client)
+        {
+            //var item = await client.GetLibraryBookAsync("3837146618", LibraryOptions.ResponseGroupOptions.ALL_OPTIONS);
+
+            //var book = new AudibleBook(client, item, _config.Environment, _loggerFactory.CreateLogger<AudibleBook>())
+            //    .OverwriteTempId(Guid.Empty);
+
+            //if (!book.EncryptedFile.Exists)
+            //{
+            //    await book.DownloadAsync();
+            //}
+
+            //var track = new Track(book.DecryptedFile.FullName);
+
+            //var lic = await book.GetLicense();
+            // ffmpeg.exe -audible_key [key] -audible_iv [iv] -i audiobook.aaxc -map_metadata 0 -id3v2_version 3 -codec:a copy -vn "audiobook.m4b"
+
+            //await FFMpegArguments.FromFileInput(book.EncryptedFile, x => x.WithAudibleEncryptionKeys(lic.Key, lic.Iv))
+            //    .MapMetaData()
+            //    .OutputToFile(book.DecryptedFile.FullName, true, x => x.WithTagVersion(3).DisableChannel(MediaChannel.Video).CopyChannel(MediaChannel.Audio))
+            //    .ProcessAsynchronously();
+
+            //await book.DecryptAsync();
+
+         
+            //await FFMpegArguments
+            // .FromFileInput(track.SourcePath)
+            // .OutputToFile(currentFile.FullName, true, x => x.WithAudioCodec("libfdk_aac").WithVariableBitrate(4).DisableChannel(Channel.Video))
+            // .ProcessAsynchronously();
+
+            Environment.Exit(0);
+        }
 
         public async ValueTask<string> GetEmailAsync()
         {
@@ -187,49 +229,50 @@ namespace AudibleSyncService
 
         private async Task SyncAsync()
         {
+            throw new NotImplementedException();
             var client = await GetClientAsync();
             var items = client
                 .EnumerateLibraryItemsAsync();
 
 
-            await foreach (var item in items)
-            {
-                using var book = new AudibleBook(client, item, _config.Environment, _loggerFactory.CreateLogger<AudibleBook>());
-                if (item is { IsEpisodes: true, LengthInMinutes: 0, AvailableCodecs: null })
-                {
-                    _logger.LogInformation($"{book.Identifier}: Skipping - No audio");
-                    continue;
-                }
+            //await foreach (var item in items)
+            //{
+            //    using var book = new AudibleBook(client, item, _config.Environment, _loggerFactory.CreateLogger<AudibleBook>());
+            //    if (item is { IsEpisodes: true, LengthInMinutes: 0, AvailableCodecs: null })
+            //    {
+            //        _logger.LogInformation($"{book.Identifier}: Skipping - No audio");
+            //        continue;
+            //    }
 
-                try
-                {
-                    await DownloadAndConvert(client, item);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogCritical(ex, $"{book.Identifier}: Download failed: {ex.Message}");
-                }
-            }
+            //    try
+            //    {
+            //        await DownloadAndConvert(client, item);
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        _logger.LogCritical(ex, $"{book.Identifier}: Download failed: {ex.Message}");
+            //    }
+            //}
 
-            async Task DownloadAndConvert(Api client, AudibleApi.Common.Item item)
-            {
-                using var book = new AudibleBook(client, item, _config.Environment, _loggerFactory.CreateLogger<AudibleBook>());
+            //async Task DownloadAndConvert(Api client, AudibleApi.Common.Item item)
+            //{
+            //    using var book = new AudibleBook(client, item, _config.Environment, _loggerFactory.CreateLogger<AudibleBook>());
 
-                if (book.OutputExists())
-                {
-                    _logger.LogInformation($"{book.Identifier} skipping: Output already exists");
-                    return;
-                }
+            //    if (book.OutputExists())
+            //    {
+            //        _logger.LogInformation($"{book.Identifier} skipping: Output already exists");
+            //        return;
+            //    }
 
-                _logger.LogInformation($"{book.Identifier} Downloading");
-                await book.DownloadAsync();
+            //    _logger.LogInformation($"{book.Identifier} Downloading");
+            //    await book.DownloadAsync();
 
-                _logger.LogInformation($"{book.Identifier} Decrypting singlePart file");
-                await book.DecryptAsync();
+            //    _logger.LogInformation($"{book.Identifier} Decrypting singlePart file");
+            //    await book.DecryptAsync();
 
-                _logger.LogInformation($"{book.Identifier} Moving file to output");
-                book.MoveToOutput();
-            }
+            //    _logger.LogInformation($"{book.Identifier} Moving file to output");
+            //    book.MoveToOutput();
+            //}
         }
     }
 }

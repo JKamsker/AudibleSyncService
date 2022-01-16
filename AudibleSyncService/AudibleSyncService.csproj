@@ -34,13 +34,15 @@
 		<PackageReference Include="Quartz.Serialization.Json" Version="3.3.3" />
 
 		<PackageReference Include="TagLibSharp" Version="2.2.0" />
+
+		<PackageReference Include="z440.atl.core" Version="4.3.0" />
 	</ItemGroup>
 	
 	<ItemGroup>
 		<ProjectReference Include="..\external\AAXClean\AAXClean.csproj" />
-		<ProjectReference Include="..\external\atldotnet\ATL\ATL.csproj" />
 		<ProjectReference Include="..\external\AudibleApi\AudibleApi.Common\AudibleApi.Common.csproj" />
 		<ProjectReference Include="..\external\AudibleApi\AudibleApi\AudibleApi.csproj" />
+		<ProjectReference Include="..\external\FFMpegCore\FFMpegCore\FFMpegCore.csproj" />
 		<ProjectReference Include="..\external\Rn.Suite\src\lib\Rnd.IO\Rnd.IO.csproj" />
 		<ProjectReference Include="..\external\Rn.Suite\src\lib\Rnd.Lib\Rnd.Lib.csproj" />
 		<ProjectReference Include="..\external\Rn.Suite\src\lib\Rnd.Logging\Rnd.Logging.csproj" />
