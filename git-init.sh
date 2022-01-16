@@ -1,4 +1,4 @@
-#!/bin/bash
+#! /bin/bash
 
 SCRIPT_PATH="$(dirname "$(realpath "$0")")"
 
