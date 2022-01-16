@@ -45,11 +45,11 @@ jobs:
         run: |
           echo IMAGE_ID="${{env.IMAGE_ID}}"
           echo VERSION="${{env.VERSION}}"
-      - 
-        name: Init Project
-        run: |
-          chmod +x ./git-init.sh
-          ./git-init.sh
+      #- 
+      #  name: Init Project
+      #  run: |
+      #    chmod +x ./git-init.sh
+      #    ./git-init.sh
       - 
         name: Build project
         run: docker build -t audible_sync_service .
